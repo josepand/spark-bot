@@ -70,7 +70,7 @@ def create_webhook(room_id):
         API_TEMPLATE.format('webhooks'),
         json={
             'name': room_id,
-            'targetUrl': 'https://kernel-sanders.herokuapp.com/messages',
+            'targetUrl': 'https://kernel-zanders.herokuapp.com/messages',
             'resource': 'messages',
             'event': 'created',
             'filter': 'roomId={}'.format(room_id),
