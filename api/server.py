@@ -19,14 +19,17 @@ class Server:
         self.last_message = None
         self._app = Bottle()
 
-        url = urlparse(os.environ["DATABASE_URL"])
-        db_conn = psycopg2.connect(
-            database=url.path[1:],
-            user=url.username,
-            password=url.password,
-            host=url.hostname,
-            port=url.port
-        )
+        if "DATABASE_URL" in os.environ:
+            url = urlparse(os.environ["DATABASE_URL"])
+            db_conn = psycopg2.connect(
+                database=url.path[1:],
+                user=url.username,
+                password=url.password,
+                host=url.hostname,
+                port=url.port
+            )
+        else:
+            db_conn = None
         self.backend = MessageHandler(db_conn)
 
     def start(self):
