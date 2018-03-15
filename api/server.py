@@ -19,7 +19,7 @@ class Server:
         self.last_message = None
         self._app = Bottle()
 
-        if "DATABASE_URL" in os.environ:
+        if "DATABASE_URL" in os.environ and os.environ.get('DATABASE_URL') is not None:
             url = urlparse(os.environ["DATABASE_URL"])
             db_conn = psycopg2.connect(
                 database=url.path[1:],
