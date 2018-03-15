@@ -405,7 +405,7 @@ class MessageHandler:
         self.save_state()
         self.send_message(room, 'done')
 
-    @cmd('(?i)(\w+) paid (\w+) ([\d\.]+)')
+    @cmd('(?i)(\w+)\s*paid (\w+) ([\d\.]+)')
     def paid_person(self, payer, payee, amount, room, sender):
         if payer.lower() == 'i':
             payer = sender
