@@ -215,7 +215,7 @@ class MessageHandler:
             wings = 0
         else:
             wings = 3
-            price += 1
+            price += 1.19
 
         drink = order_args.get('-d', 'pepsi')
 
