@@ -98,7 +98,7 @@ class MessageHandler:
         else:
             text = message.get('text')
             if text.startswith("<div>"):
-                text.strip("<div>).strip("</div>")
+                text.strip("<div>").strip("</div>")
 
         print('message text - {}'.format(text))
         for func in cmd_list:
