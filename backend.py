@@ -97,8 +97,8 @@ class MessageHandler:
             text = re.sub(PERSON_ID, '', text).strip()
         else:
             text = message.get('text')
-            if text.startswith("<div>"):
-                text.strip("<div>").strip("</div>")
+        if text.startswith("<div>"):
+            text.strip("<div>").strip("</div>")
 
         print('message text - {}'.format(text))
         for func in cmd_list:
