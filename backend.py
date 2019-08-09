@@ -95,10 +95,9 @@ class MessageHandler:
             text = re.sub('</p>', '\n\n', text)
             # remove mentions of the bot and strip whitespace
             text = re.sub(PERSON_ID, '', text).strip()
+            text = text.strip("<div>").strip("</div>")
         else:
             text = message.get('text')
-        if text.startswith("<div>"):
-            text.strip("<div>").strip("</div>")
 
         print('message text - {}'.format(text))
         for func in cmd_list:
