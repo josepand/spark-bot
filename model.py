@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Sequence, Integer, String, DateTime, Numeric, Boolean, Float
+from sqlalchemy import Column, Sequence, Integer, String, DateTime, Numeric, Boolean, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 '''
 
         state = json.dumps(
@@ -39,10 +40,22 @@ class Orders(Base):
     def __repr__(self):
         return f"<Orders('{self.id}', '{self.person_id}', '{self.meal}', '{self.spicy}', '{self.wings}', '{self.notes}', '{self.price}')>"
 
+class Users(Base):
+    __tablename__ = 'users'
+    person_id = Column(String(120), primary_key=True)
+    # user_balance = relationship("Money", backref="user")
+    display_name = Column(String(300))
+    collections = Column(Integer())
+
+    def __repr__(self):
+        return f"<user('{self.person_id}', '{self.display_name}')>"
+
 class Money(Base):
     __tablename__ = 'money'
-    person_id = Column(String(80), Sequence('id_seq'), primary_key=True)
+    id = Column(Integer, Sequence('id_seq'), primary_key = True)
+    person_id = Column(String(80), ForeignKey('users.person_id'))
     balance = Column(Float(asdecimal=True))
+    user = relationship(Users, primaryjoin=person_id == Users.person_id)
 
     def __repr__(self):
         return f"<Money('{self.person_id}', '{self.balance}')>"
@@ -71,11 +84,3 @@ class Menu(Base):
     def __repr__(self):
         return f"<menu('{self.key_id}', '{self.name}', '{self.price}', '{self.spicy}')>"
 
-class Users(Base):
-    __tablename__ = 'users'
-    person_id = Column(String(120), primary_key=True)
-    display_name = Column(String(300))
-    collections = Column(Integer())
-
-    def __repr__(self):
-        return f"<user('{self.person_id}', '{self.display_name}')>"

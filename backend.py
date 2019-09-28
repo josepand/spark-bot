@@ -79,6 +79,8 @@ class MessageHandler:
         self.menu = {}
         self.users = {}
         self.money = defaultdict(float)
+        if os.environ.get("MAIN_ROOM_ID"):
+            self.update_users(os.environ.get("MAIN_ROOM_ID"))
         self.load_state()
 
     def parse_message(self, message):
@@ -243,6 +245,9 @@ class MessageHandler:
 
         if '-no_overwrite' not in order_args:
             self.orders = [order for order in self.orders if order[0] != sender]
+        pre_tax = price
+        tax = round(TAX * price, 2)
+        price = round(price + tax, 2)
 
         self.orders.append([
             sender,
@@ -259,14 +264,16 @@ class MessageHandler:
         self.send_message(
             room,
             u'{} ordered a {}{} meal with {} hot wings and a can of {}{}. '
-            'That costs £{:0.2f}'.format(
+            'That costs £{:0.2f} + £{:0.2f} chicken tax'.format(
                 display_name,
                 'spicy ' if spicy else '',
                 meal_name,
                 3 if wings else 0,
                 drink,
                 '' if not comment else ' ({})'.format(comment[0]),
-                price
+                pre_tax,
+                tax,
+
             )
         )
         self.save_state()
@@ -461,11 +468,14 @@ class MessageHandler:
 
     def save_state(self):
         if self.db is not None:
-            self.db.set_orders(self.orders)
+            self.db.set_menu(self.menu)
+            for user in dict(self.money):
+                if user not in self.users:
+                    self.users[user] = "Unknown"
+            self.db.set_users(self.users)
             self.db.set_money(dict(self.money))
             self.db.set_usuals(self.default_orders)
-            self.db.set_menu(self.menu)
-            self.db.set_users(self.users)
+            self.db.set_orders(self.orders)
         # backup to room
         state = json.dumps(
             {
@@ -488,10 +498,10 @@ class MessageHandler:
 
     def load_state(self):
         if self.db is not None:
-            orders = self.db.get_orders()
-            usuals = self.db.get_usuals()
             menu = self.db.get_menu()
             money = self.db.get_money()
+            orders = self.db.get_orders()
+            usuals = self.db.get_usuals()
             if USE_DB:
                 self.money = money
                 self.default_orders = usuals
@@ -522,8 +532,6 @@ class MessageHandler:
             self.menu = old_menu
             self.orders = old_orders
             print('debug ', self.money)
-
-        self.save_state()
         if usuals != old_default_orders:
             print('difference in usuals')
             print(f'db {usuals}')

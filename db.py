@@ -14,7 +14,7 @@ class DB:
 
     def set_users(self, users):
         for person_id, display_name in users.items():
-            self.session.merge(User(person_id=person_id, display_name=display_name, collections=0))
+            self.session.merge(Users(person_id=person_id, display_name=display_name, collections=0))
         self.session.commit()
 
     def get_users(self, users):
