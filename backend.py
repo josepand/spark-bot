@@ -71,7 +71,8 @@ class MessageHandler:
     def __init__(self, db_conn):
         self.admin_room = os.environ['ADMIN_ROOM']
         self.send_message(self.admin_room, 'Hello')
-
+        if db_conn:
+            self.db_cur = db_conn.cursor()
         self.orders = []
         self.default_orders = {}
         self.menu = {}
