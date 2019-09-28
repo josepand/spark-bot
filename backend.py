@@ -12,6 +12,8 @@ from bot_helpers import (MENTION_REGEX, PERSON_ID, create_message, get_person_in
 
 cmd_list = []
 
+USE_DB = True
+
 
 def cmd(regex):
     def cmd_decorator(fn):
@@ -71,11 +73,11 @@ class MessageHandler:
     def __init__(self, db_conn):
         self.admin_room = os.environ['ADMIN_ROOM']
         self.send_message(self.admin_room, 'Hello')
-        if db_conn:
-            self.db_cur = db_conn.cursor()
+        self.db = db_conn
         self.orders = []
         self.default_orders = {}
         self.menu = {}
+        self.users = {}
         self.money = defaultdict(float)
         self.load_state()
 
@@ -104,8 +106,16 @@ class MessageHandler:
         for func in cmd_list:
             func(self, text, room=room, sender=sender)
 
+    def update_users(self, room):
+        ids = set(member['personId'] for member in list_memberships(room)['items'])
+        users = {}
+        for person in ids:
+            users[person] = get_display_name(person)
+        self.users = users
+
     @cmd('(?i)help')
     def send_help(self, **kwargs):
+        self.update_users(kwargs.get('room'))
         self.send_message(kwargs.get('room'), self.help_text, markdown=True)
 
     @cmd('(?i)hook me up')
@@ -450,7 +460,13 @@ class MessageHandler:
         create_message(data=data)
 
     def save_state(self):
-
+        if self.db is not None:
+            self.db.set_orders(self.orders)
+            self.db.set_money(dict(self.money))
+            self.db.set_usuals(self.default_orders)
+            self.db.set_menu(self.menu)
+            self.db.set_users(self.users)
+        # backup to room
         state = json.dumps(
             {
                 'orders': self.orders,
@@ -463,20 +479,60 @@ class MessageHandler:
         )
         self.send_message(self.admin_room, 'state={}'.format(state))
 
+    @cmd('(?i)dump db')
+    def dump_to_db(self, room, sender, **kwargs):
+        if sender != os.environ['ADMIN_ID']:
+            self.send_message(room, 'Sorry, this is an admin only command')
+            return
+        self.save_state()
+
     def load_state(self):
+        if self.db is not None:
+            orders = self.db.get_orders()
+            usuals = self.db.get_usuals()
+            menu = self.db.get_menu()
+            money = self.db.get_money()
+            if USE_DB:
+                self.money = money
+                self.default_orders = usuals
+                self.menu = menu
+                self.orders = orders
         messages = list_messages(self.admin_room, limit=100)['items']
+
+        # fallback to room message
         for message in messages:
             text = message.get('text', '')
             if text[:6] == 'state=':
                 state = json.loads(text[6:])
-                self.orders = state.get('orders', [])
-                self.default_orders = state.get('defaults', {})
-                self.menu = state.get('menu', {})
+                old_orders = state.get('orders', [])
+                old_default_orders = state.get('defaults', {})
+                old_menu = state.get('menu', {})
 
                 # load money back into default dict
-                self.money = defaultdict(float)
+                old_money = defaultdict(float)
                 for person, amount in state.get('money', {}).items():
-                    self.money[person] = round(amount, 2)
+                    if amount != 0:
+                        old_money[person] = round(amount, 2)
                 break
         else:
             print('No state found - carrying on regardless')
+        if not USE_DB:
+            self.money = old_money
+            self.default_orders = old_default_orders
+            self.menu = old_menu
+            self.orders = old_orders
+            print('debug ', self.money)
+
+        self.save_state()
+        if usuals != old_default_orders:
+            print('difference in usuals')
+            print(f'db {usuals}')
+            print(f'teams {old_default_orders}')
+        if menu != old_menu:
+            print('difference in menu')
+            print(f'db {menu}')
+            print(f'teams {old_menu}')
+        if money != old_money:
+            print('difference in money')
+            print(f'db {money}')
+            print(f'teams {old_money}')

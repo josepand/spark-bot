@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from bottle import Bottle, abort
 from backend import MessageHandler
 from .bottle_helpers import webapi, picture
+from db import DB
 from bot_helpers import get_message_info
 
 
@@ -20,17 +21,10 @@ class Server:
         self._app = Bottle()
 
         if "DATABASE_URL" in os.environ and os.environ.get('DATABASE_URL') is not None:
-            url = urlparse(os.environ["DATABASE_URL"])
-            db_conn = psycopg2.connect(
-                database=url.path[1:],
-                user=url.username,
-                password=url.password,
-                host=url.hostname,
-                port=url.port
-            )
+            db = DB(os.environ["DATABASE_URL"])
         else:
-            db_conn = None
-        self.backend = MessageHandler(db_conn)
+            db = None
+        self.backend = MessageHandler(db)
 
     def start(self):
         ''' start the server '''
