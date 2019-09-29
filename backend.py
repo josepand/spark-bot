@@ -506,7 +506,7 @@ class MessageHandler:
             usuals = self.db.get_usuals()
             if USE_DB:
                 self.money = money
-                if 'rfc' not on money:
+                if 'rfc' not self.money:
                     self.money['rfc'] = 0.0
                 self.default_orders = usuals
                 self.menu = menu
