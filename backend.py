@@ -531,7 +531,6 @@ class MessageHandler:
             self.default_orders = old_default_orders
             self.menu = old_menu
             self.orders = old_orders
-            print('debug ', self.money)
         if usuals != old_default_orders:
             print('difference in usuals')
             print(f'db {usuals}')

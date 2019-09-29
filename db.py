@@ -2,7 +2,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from model import Base, Orders, Money ,Usuals, Menu, Users
+from model import Base, Orders, Money , Menu, Users
 
 
 class DB:
@@ -51,24 +51,21 @@ class DB:
             result[entry.person_id] = float(entry.balance)
         return result
 
-    def set_usuals(self, usuals):
-        for person_id, entry in usuals.items():
-            self.session.merge(Usuals(person_id=person_id, **entry))
+    def set_usuals(self, defaults):
+        users = self.session.query(Users).all()
+        result = {}
+        for person_id, entry in defaults.items():
+            for user in users:
+                if user.person_id == person_id:
+                    user.default_order = entry
+                    break
         self.session.commit()
 
     def get_usuals(self):
-        usuals = self.session.query(Usuals).all()
+        users = self.session.query(Users).all()
         result = {}
-        for entry in usuals:
-            notes = [] if entry.notes == "{}" else [entry.notes]
-            result[entry.person_id] = {
-                'meal': entry.meal,
-                'spicy': entry.spicy,
-                'wings': entry.wings,
-                'drink': entry.drink,
-                'notes': notes,
-                'price': float(entry.price),
-            }
+        for entry in users:
+            result[entry.person_id] = entry.default_order
         return result
 
     def get_orders(self):
