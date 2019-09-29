@@ -84,6 +84,10 @@ class DB:
         return result
 
     def set_orders(self, orders):
+        existing = self.session.query(Orders).all()
+        for order in existing:
+            if order.person_id not in orders:
+                self.session.delete(order)
         for person_id, order in orders:
             self.session.merge(Orders(person_id=person_id, **order))
         self.session.commit()

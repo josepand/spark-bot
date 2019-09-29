@@ -29,12 +29,6 @@ def cmd(regex):
     return cmd_decorator
 
 
-def get_display_name(p_id):
-    if p_id == 'rfc':
-        display_name = 'The chicken shop'
-    else:
-        display_name = get_person_info(p_id).get('displayName', 'Unknown')
-    return display_name
 
 
 class MessageHandler:
@@ -84,6 +78,16 @@ class MessageHandler:
             self.update_users(os.environ.get("MAIN_ROOM_ID"))
         self.load_state()
 
+    def get_display_name(self, p_id):
+        if p_id == 'rfc':
+            display_name = 'The chicken shop'
+        elif p_id in self.users:
+            display_name = self.users[p_id]
+        else:
+            display_name = get_person_info(p_id).get('displayName', 'Unknown')
+        return display_name
+
+
     def parse_message(self, message):
         ''' parse a generic message from spark '''
         print('Saw message - {}'.format(message))
@@ -113,7 +117,7 @@ class MessageHandler:
         ids = set(member['personId'] for member in list_memberships(room)['items'])
         users = {}
         for person in ids:
-            users[person] = get_display_name(person)
+            users[person] = self.get_display_name(person)
         self.users = users
 
     @cmd('(?i)help')
@@ -291,7 +295,7 @@ class MessageHandler:
 
         credit = [
             '{} is owed £{:0.2f}'.format(
-                get_display_name(person),
+                self.get_display_name(person),
                 amount,
             )
             for person, amount in money.items()
@@ -299,7 +303,7 @@ class MessageHandler:
         ]
         debt = [
             '{} owes £{:0.2f}'.format(
-                get_display_name(person),
+                self.get_display_name(person),
                 abs(amount),
             )
             for person, amount in money.items()
@@ -343,7 +347,7 @@ class MessageHandler:
             min_wings += order['wings']
             if order['notes']:
                 comments.append('{} requested "{}"'.format(
-                    get_display_name(person),
+                    self.get_display_name(person),
 
                     order['notes'][0])
                 )
