@@ -203,7 +203,7 @@ class MessageHandler:
     @cmd('(?i)cluck (\w+)(?:$| )([ -=\w.]*)')
     def order(self, meal, args, room, sender, **kwargs):
         ''' put an order in for chicken '''
-        display_name = get_display_name(sender)
+        display_name = self.get_display_name(sender)
         if meal == 'b':
             self.send_message(room, 'Beef burgers (like all things) are inferior to chicken')
             self.send_message(
