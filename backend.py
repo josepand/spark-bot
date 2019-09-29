@@ -13,6 +13,7 @@ from bot_helpers import (MENTION_REGEX, PERSON_ID, create_message, get_person_in
 cmd_list = []
 
 USE_DB = True
+TAX = 0.05
 
 
 def cmd(regex):
@@ -482,8 +483,8 @@ class MessageHandler:
                 'orders': self.orders,
                 # convert money to regular dict
                 'money': dict(self.money),
-                'defaults': self.default_orders,
-                'menu': self.menu,
+                #'defaults': self.default_orders,
+                #'menu': self.menu,
             },
             separators=(',', ':')
         )
