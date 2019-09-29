@@ -521,7 +521,7 @@ class MessageHandler:
                 # load money back into default dict
                 old_money = defaultdict(float)
                 for person, amount in state.get('money', {}).items():
-                    if amount != 0:
+                    if person != "rfc" or amount != 0:
                         old_money[person] = round(amount, 2)
                 break
         else:

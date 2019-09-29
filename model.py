@@ -53,10 +53,8 @@ class Users(Base):
 
 class Money(Base):
     __tablename__ = 'money'
-    id = Column(Integer, Sequence('id_seq'), primary_key = True)
-    person_id = Column(String(80), ForeignKey('users.person_id'))
+    person_id = Column(String(120), primary_key = True)
     balance = Column(Float(asdecimal=True))
-    user = relationship(Users, primaryjoin=person_id == Users.person_id)
 
     def __repr__(self):
         return f"<Money('{self.person_id}', '{self.balance}')>"
