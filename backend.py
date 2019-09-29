@@ -265,13 +265,14 @@ class MessageHandler:
         self.send_message(
             room,
             u'{} ordered a {}{} meal with {} hot wings and a can of {}{}. '
-            'That costs £{:0.2f} + £{:0.2f} chicken tax'.format(
+            'That costs £{:0.2f} (£{:0.2f} + £{:0.2f} chicken tax)'.format(
                 display_name,
                 'spicy ' if spicy else '',
                 meal_name,
                 3 if wings else 0,
                 drink,
                 '' if not comment else ' ({})'.format(comment[0]),
+                round(pre_tax + tax, 2),
                 pre_tax,
                 tax,
 
